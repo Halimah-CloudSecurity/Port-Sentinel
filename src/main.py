@@ -3,6 +3,7 @@ from concurrent.futures import ThreadPoolExecutor
 from scanner import scan_port
 from banner import grab_banner
 from service_detector import identify_service
+from report import display_results
 from cli import get_arguments
 from config import MAX_WORKERS
 
@@ -13,11 +14,15 @@ target = args.target
 
 ports = range(args.start_port, args.end_port + 1)
 
+results = []
+
 
 with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
 
     futures = [
+
         executor.submit(scan_port, target, port)
+
         for port in ports
     ]
 
@@ -28,14 +33,29 @@ with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
 
         if is_open:
 
-            print(f"\n[+] Port {port} OPEN")
-
             banner = grab_banner(target, port)
 
             if banner:
 
-                print(f"    Banner  : {banner}")
-
                 service = identify_service(banner)
 
-                print(f"    Service : {service}")
+            else:
+
+                banner = "No banner found"
+
+                service = "Unknown"
+
+
+            result = {
+
+                "port": port,
+                "service": service,
+                "banner": banner
+
+            }
+
+            results.append(result)
+
+
+display_results(results)
+print(f"\nTotal Open Ports : {len(results)}")
