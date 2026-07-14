@@ -2,6 +2,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from scanner import scan_port
 from banner import grab_banner
+from service_detector import identify_service
 from cli import get_arguments
 from config import MAX_WORKERS
 
@@ -20,16 +21,21 @@ with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         for port in ports
     ]
 
+
     for future in futures:
 
         port, is_open = future.result()
 
         if is_open:
 
-            print(f"[+] Port {port} OPEN")
+            print(f"\n[+] Port {port} OPEN")
 
             banner = grab_banner(target, port)
 
             if banner:
 
-                print(f"    Banner: {banner}")
+                print(f"    Banner  : {banner}")
+
+                service = identify_service(banner)
+
+                print(f"    Service : {service}")

@@ -21,7 +21,7 @@ while True:
 
     print(f"Connection received from {address}")
 
-    banner = "PortSentinel Test Service v1.0\n"
+    banner = "SSH-2.0-OpenSSH_9.6\n"
 
     client_socket.send(banner.encode())
 
