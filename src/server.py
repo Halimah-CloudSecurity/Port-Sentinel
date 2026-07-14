@@ -1,32 +1,28 @@
 import socket
 
-# Create a TCP IPv4 socket
-server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-# Bind it to localhost on port 8000
-server_socket.bind(("127.0.0.1", 8000))
+HOST = "127.0.0.1"
+PORT = 8000
 
-# Listen for incoming connections
-server_socket.listen()
 
-print("Server is listening on 127.0.0.1:8000...")
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+server.bind((HOST, PORT))
+
+server.listen()
+
+
+print(f"Server listening on {HOST}:{PORT}")
+
 
 while True:
-    # Wait for a client
-    client_socket, address = server_socket.accept()
 
-    print(f"\n[+] Client connected: {address}")
+    client_socket, address = server.accept()
 
-    # Receive data
-    message = client_socket.recv(1024).decode()
+    print(f"Connection received from {address}")
 
-    print(f"Client says: {message}")
+    banner = "PortSentinel Test Service v1.0\n"
 
-    # Send a reply
-    reply = "Welcome to PortSentinel!"
-    client_socket.send(reply.encode())
+    client_socket.send(banner.encode())
 
-    # Close this client's connection
     client_socket.close()
-
-    print("[+] Client disconnected") 
