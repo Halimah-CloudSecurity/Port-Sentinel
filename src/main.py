@@ -8,9 +8,8 @@ from banner import grab_banner
 from service_detector import identify_service
 from report import display_results, save_json_report
 from cli import get_arguments
-from config import MAX_WORKERS
-from utils import log_info, log_error
 from resolver import resolve_target
+from utils import log_info, log_error
 
 
 # Get command-line arguments
@@ -19,7 +18,6 @@ args = get_arguments()
 
 # Target to scan
 target = args.target
-
 
 # Resolve hostname
 resolved_ip = resolve_target(target)
@@ -43,30 +41,35 @@ log_info(f"Target: {target}")
 log_info(f"Resolved IP: {resolved_ip}")
 
 
-# Start timing the scan
+# Start timing
 start_time = time.time()
 
 
-# Create the port range
+# Port range
 ports = list(
+
     range(
         args.start_port,
         args.end_port + 1
     )
+
 )
 
 log_info(
-    f"Scanning ports {args.start_port} to {args.end_port}"
+
+    f"Scanning ports "
+    f"{args.start_port} "
+    f"to {args.end_port}"
+
 )
 
-
-# Store scan results
+# Results storage
 results = []
 
 
-# Create a thread pool
+# Multithreaded scanning
 with ThreadPoolExecutor(
-        max_workers=MAX_WORKERS
+        max_workers=args.workers
 ) as executor:
 
     futures = [
@@ -80,7 +83,6 @@ with ThreadPoolExecutor(
         for port in ports
 
     ]
-
 
     for future in futures:
 
@@ -108,15 +110,17 @@ with ThreadPoolExecutor(
                 banner = "No banner found"
                 service = "Unknown"
 
-            result = {
+            results.append(
 
-                "port": port,
-                "service": service,
-                "banner": banner
+                {
 
-            }
+                    "port": port,
+                    "service": service,
+                    "banner": banner
 
-            results.append(result)
+                }
+
+            )
 
 
 # Calculate scan time
@@ -128,12 +132,11 @@ scan_time = round(
 )
 
 
+# Display results
 log_info(
     "Generating scan summary..."
 )
 
-
-# Display results
 display_results(
 
     results,
@@ -144,7 +147,7 @@ display_results(
 )
 
 
-# Save JSON report only if useful
+# Save report
 if results:
 
     log_info(
@@ -158,7 +161,8 @@ if results:
 else:
 
     log_info(
-        "No open ports found. JSON report was not generated."
+        "No open ports found. "
+        "JSON report was not generated."
     )
 
 
