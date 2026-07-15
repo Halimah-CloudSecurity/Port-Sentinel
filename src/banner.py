@@ -3,15 +3,28 @@ import socket
 from config import DEFAULT_TIMEOUT
 
 
-def grab_banner(target, port):
+SECURITY_HEADERS = [
 
+    "Strict-Transport-Security",
+
+    "Content-Security-Policy",
+
+    "X-Frame-Options",
+
+    "X-Content-Type-Options",
+
+    "Permissions-Policy"
+
+]
+
+
+def grab_banner(target, port):
     """
     Retrieve service information
     based on protocol behavior.
     """
 
     if port in [80, 8080]:
-
         return grab_http_banner(target, port)
 
     return grab_standard_banner(target, port)
@@ -47,12 +60,6 @@ def grab_standard_banner(target, port):
 
 def grab_http_banner(target, port):
 
-    """
-    Placeholder for HTTP support.
-    """
-
-def grab_http_banner(target, port):
-
     try:
 
         sock = socket.socket(
@@ -83,8 +90,49 @@ def grab_http_banner(target, port):
         if not lines:
             return None
 
-        return "\n".join(lines[:5])
+        banner = "\n".join(lines[:5])
+
+        found, missing = analyze_security_headers(
+            response
+        )
+
+        if found:
+
+            banner += "\n\nSecurity Headers Found:"
+
+            for header in found:
+
+                banner += f"\n- {header}"
+
+        if missing:
+
+            banner += "\n\nMissing Security Headers:"
+
+            for header in missing:
+
+                banner += f"\n- {header}"
+
+        return banner
 
     except Exception:
 
         return None
+
+
+def analyze_security_headers(response):
+
+    found_headers = []
+
+    missing_headers = []
+
+    for header in SECURITY_HEADERS:
+
+        if header.lower() in response.lower():
+
+            found_headers.append(header)
+
+        else:
+
+            missing_headers.append(header)
+
+    return found_headers, missing_headers
