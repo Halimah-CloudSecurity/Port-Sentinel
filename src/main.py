@@ -1,3 +1,4 @@
+import time
 from concurrent.futures import ThreadPoolExecutor
 
 from scanner import scan_port
@@ -13,6 +14,8 @@ args = get_arguments()
 
 # Target to scan
 target = args.target
+
+start_time = time.time()
 
 # Create the port range
 ports = range(args.start_port, args.end_port + 1)
@@ -52,9 +55,17 @@ with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
 
             results.append(result)
 
+end_time = time.time()
+
+scan_time = round(end_time - start_time, 2)
 
 # Display results nicely
-display_results(results)
+display_results(
+    results,
+    target,
+    len(ports),
+    scan_time
+)
 
 # Save JSON report
 save_json_report(results)
