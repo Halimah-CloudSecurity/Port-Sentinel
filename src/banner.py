@@ -1,4 +1,5 @@
 import socket
+import ssl
 
 from config import DEFAULT_TIMEOUT
 
@@ -27,8 +28,10 @@ def grab_banner(target, port):
     if port in [80, 8080]:
         return grab_http_banner(target, port)
 
+    if port == 443:
+        return grab_https_banner(target, port)
+    
     return grab_standard_banner(target, port)
-
 
 def grab_standard_banner(target, port):
 
@@ -135,4 +138,69 @@ def analyze_security_headers(response):
 
             missing_headers.append(header)
 
-    return found_headers, missing_headers
+    return found_headers, missing_headers 
+
+def grab_https_banner(target, port):
+
+    try:
+
+        context = ssl.create_default_context()
+
+        sock = socket.create_connection(
+            (target, port),
+            timeout=DEFAULT_TIMEOUT
+        )
+
+        secure_socket = context.wrap_socket(
+            sock,
+            server_hostname=target
+        )
+
+        https_request = (
+            f"GET / HTTP/1.1\r\n"
+            f"Host: {target}\r\n"
+            f"Connection: close\r\n\r\n"
+        )
+
+        secure_socket.send(
+            https_request.encode()
+        )
+
+        response = secure_socket.recv(
+            4096
+        ).decode(errors="ignore")
+
+        secure_socket.close()
+
+        lines = response.splitlines()
+
+        if not lines:
+            return None
+
+        banner = "\n".join(lines[:5])
+
+        found, missing = analyze_security_headers(
+            response
+        )
+
+        if found:
+
+            banner += "\n\nSecurity Headers Found:"
+
+            for header in found:
+
+                banner += f"\n- {header}"
+
+        if missing:
+
+            banner += "\n\nMissing Security Headers:"
+
+            for header in missing:
+
+                banner += f"\n- {header}"
+
+        return banner
+
+    except Exception:
+
+        return None
