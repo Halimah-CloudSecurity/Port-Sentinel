@@ -51,4 +51,40 @@ def grab_http_banner(target, port):
     Placeholder for HTTP support.
     """
 
-    return "HTTP service detected (enumeration coming soon)"
+def grab_http_banner(target, port):
+
+    try:
+
+        sock = socket.socket(
+            socket.AF_INET,
+            socket.SOCK_STREAM
+        )
+
+        sock.settimeout(DEFAULT_TIMEOUT)
+
+        sock.connect((target, port))
+
+        http_request = (
+            f"GET / HTTP/1.1\r\n"
+            f"Host: {target}\r\n"
+            f"Connection: close\r\n\r\n"
+        )
+
+        sock.send(http_request.encode())
+
+        response = sock.recv(4096).decode(
+            errors="ignore"
+        )
+
+        sock.close()
+
+        lines = response.splitlines()
+
+        if not lines:
+            return None
+
+        return "\n".join(lines[:5])
+
+    except Exception:
+
+        return None
