@@ -1,3 +1,4 @@
+import sys
 import time
 
 from concurrent.futures import ThreadPoolExecutor
@@ -8,7 +9,8 @@ from service_detector import identify_service
 from report import display_results, save_json_report
 from cli import get_arguments
 from config import MAX_WORKERS
-from utils import log_info
+from utils import log_info, log_error
+from resolver import resolve_target
 
 
 # Get command-line arguments
@@ -18,8 +20,27 @@ args = get_arguments()
 # Target to scan
 target = args.target
 
+
+# Resolve hostname
+resolved_ip = resolve_target(target)
+
+
+if not resolved_ip:
+
+    log_error(
+        "Failed to resolve the target hostname."
+    )
+
+    log_error(
+        f"Target: {target}"
+    )
+
+    sys.exit()
+
+
 log_info("Starting PortSentinel scan...")
 log_info(f"Target: {target}")
+log_info(f"Resolved IP: {resolved_ip}")
 
 
 # Start timing the scan
@@ -27,9 +48,11 @@ start_time = time.time()
 
 
 # Create the port range
-ports = range(
-    args.start_port,
-    args.end_port + 1
+ports = list(
+    range(
+        args.start_port,
+        args.end_port + 1
+    )
 )
 
 log_info(
@@ -41,7 +64,7 @@ log_info(
 results = []
 
 
-# Create a thread pool for faster scanning
+# Create a thread pool
 with ThreadPoolExecutor(
         max_workers=MAX_WORKERS
 ) as executor:
@@ -65,7 +88,9 @@ with ThreadPoolExecutor(
 
         if is_open:
 
-            log_info(f"Port {port} OPEN")
+            log_info(
+                f"Port {port} OPEN"
+            )
 
             banner = grab_banner(
                 target,
@@ -103,7 +128,9 @@ scan_time = round(
 )
 
 
-log_info("Generating scan summary...")
+log_info(
+    "Generating scan summary..."
+)
 
 
 # Display results
@@ -117,11 +144,16 @@ display_results(
 )
 
 
-# Save report only if useful
+# Save JSON report only if useful
 if results:
 
-    log_info("Saving JSON report...")
-    save_json_report(results)
+    log_info(
+        "Saving JSON report..."
+    )
+
+    save_json_report(
+        results
+    )
 
 else:
 
@@ -130,4 +162,6 @@ else:
     )
 
 
-log_info("Scan completed successfully.")
+log_info(
+    "Scan completed successfully."
+)

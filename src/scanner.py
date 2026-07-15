@@ -8,16 +8,29 @@ def scan_port(target, port):
     Scan a single TCP port.
 
     Returns:
-        (port, True) if open
-        (port, False) if closed
+        (port, True) if open.
+        (port, False) if closed or inaccessible.
     """
 
-    scanner = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
 
-    scanner.settimeout(DEFAULT_TIMEOUT)
+        scanner = socket.socket(
+            socket.AF_INET,
+            socket.SOCK_STREAM
+        )
 
-    result = scanner.connect_ex((target, port))
+        scanner.settimeout(
+            DEFAULT_TIMEOUT
+        )
 
-    scanner.close()
+        result = scanner.connect_ex(
+            (target, port)
+        )
 
-    return port, (result == 0) 
+        scanner.close()
+
+        return port, (result == 0)
+
+    except Exception:
+
+        return port, False
