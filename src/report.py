@@ -4,6 +4,7 @@ import json
 def display_results(
 
         results,
+        dns_information,
         target,
         total_ports,
         scan_time
@@ -17,6 +18,30 @@ def display_results(
     print(f"Open Ports        : {len(results)}")
     print(f"Scan Time         : {scan_time} seconds")
 
+
+    print("\n========== DNS Information ==========\n")
+
+    print(
+        f"A Record(s): "
+        f"{dns_information['a_record']}"
+    )
+
+    print(
+        f"Canonical Name: "
+        f"{dns_information['cname']}"
+    )
+
+    print(
+        f"Name Servers: "
+        f"{dns_information['name_servers']}"
+    )
+
+    print(
+        f"MX Records: "
+        f"{dns_information['mx_records']}"
+    )
+
+
     print("\n----------------------------------")
 
     for result in results:
@@ -25,11 +50,15 @@ def display_results(
         print(f"Service   : {result['service']}")
         print(f"Banner    : {result['banner']}")
 
-        certificate = result.get("certificate")
+        certificate = result.get(
+            "certificate"
+        )
 
         if certificate:
 
-            print("\nTLS Certificate Information")
+            print(
+                "\nTLS Certificate Information"
+            )
 
             print(
                 f"Valid From : "

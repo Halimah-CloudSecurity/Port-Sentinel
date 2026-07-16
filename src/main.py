@@ -12,6 +12,7 @@ from resolver import resolve_target
 from utils import log_info, log_error
 from validator import validate_arguments
 from certificate import get_certificate_info
+from dns_info import get_dns_information
 
 from config import (
     HTTPS_PORTS,
@@ -47,6 +48,12 @@ if not resolved_ip:
 log_info("Starting PortSentinel scan...")
 log_info(f"Target: {target}")
 log_info(f"Resolved IP: {resolved_ip}")
+
+
+# Get DNS information
+dns_information = get_dns_information(
+    target
+)
 
 
 # Start timing
@@ -169,6 +176,7 @@ log_info(
 display_results(
 
     results,
+    dns_information,
     target,
     len(ports),
     scan_time
