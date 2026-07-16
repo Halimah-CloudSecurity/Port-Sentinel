@@ -10,18 +10,26 @@ from report import display_results, save_json_report
 from cli import get_arguments
 from resolver import resolve_target
 from utils import log_info, log_error
+from validator import validate_arguments
+from certificate import get_certificate_info
+
+from config import (
+    HTTPS_PORTS,
+    ENABLE_TLS_ANALYSIS
+)
 
 
 # Get command-line arguments
 args = get_arguments()
 
+# Validate user input
+validate_arguments(args)
 
 # Target to scan
 target = args.target
 
 # Resolve hostname
 resolved_ip = resolve_target(target)
-
 
 if not resolved_ip:
 
@@ -55,6 +63,7 @@ ports = list(
 
 )
 
+
 log_info(
 
     f"Scanning ports "
@@ -63,7 +72,8 @@ log_info(
 
 )
 
-# Results storage
+
+# Store scan results
 results = []
 
 
@@ -110,13 +120,32 @@ with ThreadPoolExecutor(
                 banner = "No banner found"
                 service = "Unknown"
 
+            # TLS Certificate Analysis
+            certificate_info = None
+
+            if (
+
+                ENABLE_TLS_ANALYSIS
+                and port in HTTPS_PORTS
+
+            ):
+
+                certificate_info = get_certificate_info(
+
+                    target,
+                    port
+
+                )
+
+            # Store results
             results.append(
 
                 {
 
                     "port": port,
                     "service": service,
-                    "banner": banner
+                    "banner": banner,
+                    "certificate": certificate_info
 
                 }
 
@@ -147,7 +176,7 @@ display_results(
 )
 
 
-# Save report
+# Save JSON report
 if results:
 
     log_info(

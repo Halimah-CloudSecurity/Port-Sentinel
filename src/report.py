@@ -2,16 +2,18 @@ import json
 
 
 def display_results(
+
         results,
         target,
-        ports_scanned,
+        total_ports,
         scan_time
+
 ):
 
     print("\n========== PortSentinel Scan Summary ==========\n")
 
     print(f"Target            : {target}")
-    print(f"Ports Scanned     : {ports_scanned}")
+    print(f"Ports Scanned     : {total_ports}")
     print(f"Open Ports        : {len(results)}")
     print(f"Scan Time         : {scan_time} seconds")
 
@@ -19,12 +21,33 @@ def display_results(
 
     for result in results:
 
-        print(f"\nPort    : {result['port']}")
-        print(f"Service : {result['service']}")
-        print(f"Banner  : {result['banner']}")
+        print(f"\nPort      : {result['port']}")
+        print(f"Service   : {result['service']}")
+        print(f"Banner    : {result['banner']}")
 
-        print("----------------------------------")
+        certificate = result.get("certificate")
 
+        if certificate:
+
+            print("\nTLS Certificate Information")
+
+            print(
+                f"Valid From : "
+                f"{certificate['valid_from']}"
+            )
+
+            print(
+                f"Valid Until : "
+                f"{certificate['valid_until']}"
+            )
+
+            print(
+                f"Issuer : "
+                f"{certificate['issuer']}"
+            )
+
+        print("\n----------------------------------")
+        
 def save_json_report(results):
 
     filename = "scan_results.json"

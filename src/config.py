@@ -8,6 +8,17 @@ START_PORT = 1
 END_PORT = 1024
 
 
+# Validation limits
+MIN_PORT = 1
+MAX_PORT = 65535
+
+MIN_TIMEOUT = 1
+MAX_TIMEOUT = 30
+
+MIN_WORKERS = 1
+MAX_ALLOWED_WORKERS = 1000
+
+
 # Common HTTP ports
 HTTP_PORTS = [
 
@@ -30,3 +41,6 @@ HTTPS_PORTS = [
     9443
 
 ]
+
+# Enable TLS certificate analysis
+ENABLE_TLS_ANALYSIS = True
